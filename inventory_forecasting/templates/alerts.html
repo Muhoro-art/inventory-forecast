@@ -1,0 +1,138 @@
+<!-- templates/alerts.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restocking Alerts - Inventory Forecasting</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Inventory Forecasting</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/alerts">Restocking Alerts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/accuracy">Model Accuracy</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>Restocking Alerts</h1>
+            <button class="btn btn-primary" onclick="placeAllOrders()">Place All Orders</button>
+        </div>
+        
+        {% if alerts %}
+        <div class="alert alert-info mt-3">
+            <strong>{{ alerts|length }}</strong> items need restocking
+        </div>
+        
+        <div class="table-responsive mt-3">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Current Stock</th>
+                        <th>Avg Daily Sales</th>
+                        <th>Days Until Stockout</th>
+                        <th>Recommended Order</th>
+                        <th>Urgency</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alert in alerts %}
+                    <tr class="{% if alert.urgency == 'High' %}table-danger{% else %}table-warning{% endif %}">
+                        <td>{{ alert.item }}</td>
+                        <td>{{ alert.current_stock }}</td>
+                        <td>{{ alert.avg_daily_sales }}</td>
+                        <td>{{ alert.days_until_stockout }}</td>
+                        <td>{{ alert.recommended_order }}</td>
+                        <td>
+                            <span class="badge {% if alert.urgency == 'High' %}bg-danger{% else %}bg-warning{% endif %}">
+                                {{ alert.urgency }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" 
+                                    onclick="placeOrder('{{ alert.item }}', {{ alert.recommended_order }})">
+                                Place Order
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-success mt-4">
+            <h4 class="alert-heading">No Restocking Alerts</h4>
+            <p>All inventory levels are currently healthy. No items need immediate restocking.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Place order function
+        async function placeOrder(item, quantity) {
+            try {
+                const response = await fetch('/place_order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({item: item, quantity: quantity})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    // Remove the row from the table
+                    const rows = document.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        if (row.textContent.includes(item)) {
+                            row.remove();
+                        }
+                    });
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error placing order: ' + error.message);
+            }
+        }
+
+        // Place all orders function
+        async function placeAllOrders() {
+            if (confirm('Are you sure you want to place orders for all items?')) {
+                const rows = document.querySelectorAll('tbody tr');
+                
+                for (const row of rows) {
+                    const cells = row.querySelectorAll('td');
+                    const item = cells[0].textContent;
+                    const quantity = parseInt(cells[4].textContent);
+                    
+                    await placeOrder(item, quantity);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

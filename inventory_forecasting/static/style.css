@@ -1,0 +1,62 @@
+/* static/style.css (updated) */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1.5rem;
+    border: none;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.table-responsive {
+    overflow-y: auto;
+}
+
+.progress {
+    height: 20px;
+}
+
+.alert-section {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Custom badges */
+.badge {
+    font-size: 0.75em;
+}
+
+/* Hover effects */
+.btn {
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Table row highlighting */
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* Card headers */
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    font-weight: 600;
+}
+
+/* Custom chart container */
+.chart-container {
+    position: relative;
+    height: 250px;
+    width: 100%;
+}
